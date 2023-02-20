@@ -1,41 +1,41 @@
 import React, {useEffect, useState} from 'react';
 import axios from 'axios'
 import { Link } from 'react-router-dom';
-import { useNavigate, useParams } from 'react-router-dom';
-const ProductForm = (props) => {
+import { useParams, useNavigate } from 'react-router-dom';
+
+const EditOne = (props) => {
     const navigate = useNavigate()
     const {id} = useParams()
-    const {allProducts, setallProducts} = props
     const [product, setProduct] = useState({
         Title: "",
         Price: '',
         Description: '',
     })
-    
+    useEffect(() => {
+        axios.get(`http://localhost:8000/api/oneProduct/${id}`)
+            .then((product) => {
+                console.log(product.data);
+                setProduct(product.data)
+            })
+            .catch((err) => {
+                console.log(err);
+            })
+        },[])
+
     const handleInputChange = (e) => {
         setProduct({...product,[e.target.name]: e.target.value})
     }
 
     const submitHandler = (e) => {
         e.preventDefault();
-        axios.post(`http://localhost:8000/api/postProduct`, product)
+        axios.put(`http://localhost:8000/api/updateProduct/${id}`, product)
             .then((res) => {
-                setallProducts([...allProducts, res.data])
+                navigate('/')
             })
             .catch((err) => {
                 console.log(err);
             })
     }
-    useEffect(() => {
-        axios.get('http://localhost:8000/api/allProducts')
-            .then((allProducts) => {
-                console.log(allProducts.data);
-                setallProducts(allProducts.data)
-            })
-            .catch((err) => {
-                console.log(err);
-            })
-        })
 
     return (
         <div className='d-flex justify-content-center mt-5'>
@@ -50,23 +50,11 @@ const ProductForm = (props) => {
                 <label className='form-label'>Description:</label>
                 <input className='form-control'type="text"  onChange={handleInputChange} value ={product.Description} name='Description'/>
 
-                <button className='btn btn-primary mt-2'>Create</button>
+                <button className='btn btn-primary mt-2'>Edit</button>
             </form>
-            <div  className=''>
-            <h2>Product Collection</h2>
-            {
-                allProducts.map((product) =>(
-                <div key = {product._id}>
-                <Link to={`/oneProduct/${product._id}`}>{product.Title}</Link>
-                </div>
-                ))
-                
-            }
-            
-            </div>
         </div>
 
     )
 }
 
-export default ProductForm;
+export default EditOne;
